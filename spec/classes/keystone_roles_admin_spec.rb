@@ -11,16 +11,14 @@ describe 'keystone::roles::admin' do
       :osfamily               => 'Debian',
       :operatingsystem        => 'Debian',
       :operatingsystemrelease => '7.0',
-      :processorcount         => '1'
+      :os_workers             => 1,
     })
   end
 
   describe 'with only the required params set' do
     let :params do
       {
-        :email          => 'foo@bar',
-        :password       => 'ChangeMe',
-        :service_tenant => 'services'
+        :password       => 'ChangeMe'
       }
     end
 
@@ -37,7 +35,7 @@ describe 'keystone::roles::admin' do
     it { is_expected.to contain_keystone_user('admin').with(
       :ensure                 => 'present',
       :enabled                => true,
-      :email                  => 'foo@bar',
+      :email                  => 'admin@localhost',
       :password               => 'ChangeMe',
     )}
     it { is_expected.to contain_keystone_role('admin').with_ensure('present') }

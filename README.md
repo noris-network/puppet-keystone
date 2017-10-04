@@ -1,3 +1,10 @@
+Team and repository tags
+========================
+
+[![Team and repository tags](http://governance.openstack.org/badges/puppet-keystone.svg)](http://governance.openstack.org/reference/tags/index.html)
+
+<!-- Change things from this point on -->
+
 keystone
 =======
 
@@ -74,11 +81,11 @@ Keystone ships with a collection of native types that can be used to interact wi
 ```puppet
 keystone_tenant { 'openstack':
   ensure  => present,
-  enabled => True,
+  enabled => true,
 }
 keystone_user { 'openstack':
   ensure  => present,
-  enabled => True,
+  enabled => true,
 }
 keystone_role { 'admin':
   ensure => present,

@@ -64,7 +64,7 @@
 #
 # [*token_provider*]
 #   (optional) Format keystone uses for tokens.
-#   Defaults to 'uuid'
+#   Defaults to 'fernet'
 #   Supports pki, pkiz, fernet, and uuid.
 #
 # [*token_driver*]
@@ -201,32 +201,8 @@
 #      transport://user:pass@host1:port[,hostN:portN]/virtual_host
 #    Defaults to $::os_service_default
 #
-# [*rabbit_host*]
-#   (optional) Location of rabbitmq installation.
-#    Defaults to $::os_service_default
-#
-# [*rabbit_port*]
-#   (optional) Port for rabbitmq instance.
-#   Defaults to $::os_service_default
-#
-# [*rabbit_hosts*]
-#   (optional) Location of rabbitmq installation.
-#   Defaults to $::os_service_default
-#
 # [*rabbit_ha_queues*]
 #   (Optional) Use HA queues in RabbitMQ.
-#   Defaults to $::os_service_default
-#
-# [*rabbit_password*]
-#   (optional) Password used to connect to rabbitmq.
-#   Defaults to $::os_service_default
-#
-# [*rabbit_userid*]
-#   (optional) User used to connect to rabbitmq.
-#   Defaults to $::os_service_default
-#
-# [*rabbit_virtual_host*]
-#   (optional) The RabbitMQ virtual host.
 #   Defaults to $::os_service_default
 #
 # [*rabbit_heartbeat_timeout_threshold*]
@@ -283,6 +259,12 @@
 #   (string value)
 #   Defaults to $::os_service_default
 #
+# [*notification_transport_url*]
+#   (optional) A URL representing the messaging driver to use for notifications
+#   and its full configuration. Transport URLs take the form:
+#     transport://user:pass@host1:port[,hostN:portN]/virtual_host
+#   Defaults to $::os_service_default
+#
 # [*notification_driver*]
 #   RPC driver. Not enabled by default (list value)
 #   Defaults to $::os_service_default
@@ -311,7 +293,7 @@
 #
 # [*log_dir*]
 #   (optional) Directory where logs should be stored
-#   If set to boolean false, it will not log to any directory
+#   If set to $::os_service_default, it will not log to any directory
 #   Defaults to undef.
 #
 # [*log_file*]
@@ -410,13 +392,13 @@
 #   (optional) The number of worker processes to serve the admin eventlet application.
 #   This option is deprecated along with eventlet and will be removed in M.
 #   This setting has no affect when using WSGI.
-#   Defaults to max($::processorcount, 2)
+#   Defaults to $::os_workers
 #
 # [*public_workers*]
 #   (optional) The number of worker processes to serve the public eventlet application.
 #   This option is deprecated along with eventlet and will be removed in M.
 #   This setting has no affect when using WSGI.
-#   Defaults to max($::processorcount, 2)
+#   Defaults to $::os_workers
 #
 # [*sync_db*]
 #   (Optional) Run db sync on the node.
@@ -427,7 +409,7 @@
 #   run on a single node, then the keys are replicated to the other nodes
 #   in a cluster. You would typically also pair this with a fernet token
 #   provider setting.
-#   Defaults to false
+#   Defaults to true
 #
 # [*fernet_key_repository*]
 #   (Optional) Location for the fernet key repository. This value must
@@ -581,10 +563,6 @@
 # [*service_provider*]
 #   (optional) Deprecated. Provider, that can be used for keystone service.
 #
-# [*verbose*]
-#   (optional) Deprecated. Rather keystone should log at verbose level.
-#   Defaults to undef.
-#
 # [*enable_pki_setup*]
 #   (optional) Deprecated. Enable call to pki_setup to generate the cert for signing pki tokens and
 #   revocation lists if it doesn't already exist. This generates a cert and key stored in file
@@ -620,6 +598,30 @@
 #
 # [*signing_key_size*]
 #   (optional) Deprecated. Key size (in bits) for token signing cert (auto generated certificate)
+#   Defaults to $::os_service_default
+#
+# [*rabbit_host*]
+#   (optional) Location of rabbitmq installation.
+#    Defaults to $::os_service_default
+#
+# [*rabbit_port*]
+#   (optional) Port for rabbitmq instance.
+#   Defaults to $::os_service_default
+#
+# [*rabbit_hosts*]
+#   (optional) Location of rabbitmq installation.
+#   Defaults to $::os_service_default
+#
+# [*rabbit_password*]
+#   (optional) Password used to connect to rabbitmq.
+#   Defaults to $::os_service_default
+#
+# [*rabbit_userid*]
+#   (optional) User used to connect to rabbitmq.
+#   Defaults to $::os_service_default
+#
+# [*rabbit_virtual_host*]
+#   (optional) The RabbitMQ virtual host.
 #   Defaults to $::os_service_default
 #
 # == Dependencies
@@ -668,7 +670,7 @@ class keystone(
   $catalog_type                         = 'sql',
   $catalog_driver                       = false,
   $catalog_template_file                = '/etc/keystone/default_catalog.templates',
-  $token_provider                       = 'uuid',
+  $token_provider                       = 'fernet',
   $token_driver                         = 'sql',
   $token_expiration                     = 3600,
   $revoke_driver                        = $::os_service_default,
@@ -701,12 +703,6 @@ class keystone(
   $database_min_pool_size               = undef,
   $database_max_pool_size               = undef,
   $database_max_overflow                = undef,
-  $rabbit_host                          = $::os_service_default,
-  $rabbit_hosts                         = $::os_service_default,
-  $rabbit_password                      = $::os_service_default,
-  $rabbit_port                          = $::os_service_default,
-  $rabbit_userid                        = $::os_service_default,
-  $rabbit_virtual_host                  = $::os_service_default,
   $rabbit_heartbeat_timeout_threshold   = $::os_service_default,
   $rabbit_heartbeat_rate                = $::os_service_default,
   $rabbit_use_ssl                       = $::os_service_default,
@@ -719,6 +715,7 @@ class keystone(
   $kombu_reconnect_delay                = $::os_service_default,
   $kombu_failover_strategy              = $::os_service_default,
   $kombu_compression                    = $::os_service_default,
+  $notification_transport_url           = $::os_service_default,
   $notification_driver                  = $::os_service_default,
   $notification_topics                  = $::os_service_default,
   $notification_format                  = $::os_service_default,
@@ -731,7 +728,7 @@ class keystone(
   $service_name                         = $::keystone::params::service_name,
   $max_token_size                       = $::os_service_default,
   $sync_db                              = true,
-  $enable_fernet_setup                  = false,
+  $enable_fernet_setup                  = true,
   $fernet_key_repository                = '/etc/keystone/fernet-keys',
   $fernet_max_active_keys               = $::os_service_default,
   $fernet_keys                          = false,
@@ -756,10 +753,9 @@ class keystone(
   $enable_proxy_headers_parsing         = $::os_service_default,
   $purge_config                         = false,
   # DEPRECATED PARAMETERS
-  $admin_workers                        = max($::processorcount, 2),
-  $public_workers                       = max($::processorcount, 2),
+  $admin_workers                        = $::os_workers,
+  $public_workers                       = $::os_workers,
   $service_provider                     = undef,
-  $verbose                              = undef,
   $enable_pki_setup                     = undef,
   $signing_certfile                     = $::os_service_default,
   $signing_keyfile                      = $::os_service_default,
@@ -767,22 +763,31 @@ class keystone(
   $signing_ca_key                       = $::os_service_default,
   $signing_cert_subject                 = $::os_service_default,
   $signing_key_size                     = $::os_service_default,
+  $rabbit_host                          = $::os_service_default,
+  $rabbit_hosts                         = $::os_service_default,
+  $rabbit_password                      = $::os_service_default,
+  $rabbit_port                          = $::os_service_default,
+  $rabbit_userid                        = $::os_service_default,
+  $rabbit_virtual_host                  = $::os_service_default,
 ) inherits keystone::params {
 
   include ::keystone::deps
   include ::keystone::logging
-
-  if $token_provider == 'uuid' {
-    warning("Fernet token is recommended in Mitaka release. The default for token_provider will be changed to 'fernet' in O release.")
-  }
 
   if $service_provider {
     warning("service_provider is deprecated, does nothing and will be removed in a future release, \
 use a Puppet resource collector if you want to modify the service provider.")
   }
 
-  if $verbose {
-    warning('verbose is deprecated, has no effect and will be removed after Newton cycle.')
+  if !is_service_default($rabbit_host) or
+    !is_service_default($rabbit_hosts) or
+    !is_service_default($rabbit_password) or
+    !is_service_default($rabbit_port) or
+    !is_service_default($rabbit_userid) or
+    !is_service_default($rabbit_virtual_host) {
+    warning("keystone::rabbit_host, keystone::rabbit_hosts, keystone::rabbit_password, \
+keystone::rabbit_port, keystone::rabbit_userid and keystone::rabbit_virtual_host are \
+deprecated. Please use keystone::default_transport_url instead.")
   }
 
   if ! $catalog_driver {
@@ -1046,8 +1051,9 @@ Fernet or UUID tokens are recommended.")
   }
 
   oslo::messaging::notifications { 'keystone_config':
-    driver => $notification_driver,
-    topics => $notification_topics,
+    transport_url => $notification_transport_url,
+    driver        => $notification_driver,
+    topics        => $notification_topics,
   }
 
   oslo::messaging::rabbit { 'keystone_config':
@@ -1137,6 +1143,7 @@ running as a standalone service, or httpd for being run by a httpd server")
       ensure    => 'directory',
       owner     => $keystone_user,
       group     => $keystone_group,
+      mode      => '0600',
       subscribe => Anchor['keystone::install::end'],
     })
 
@@ -1145,6 +1152,7 @@ running as a standalone service, or httpd for being run by a httpd server")
       create_resources('file', $fernet_keys, {
           'owner'     => $keystone_user,
           'group'     => $keystone_group,
+          'mode'      => '0600',
           'subscribe' => 'Anchor[keystone::install::end]',
         }
       )
@@ -1170,6 +1178,7 @@ running as a standalone service, or httpd for being run by a httpd server")
       ensure    => 'directory',
       owner     => $keystone_user,
       group     => $keystone_group,
+      mode      => '0600',
       subscribe => Anchor['keystone::install::end'],
     })
 
@@ -1178,6 +1187,7 @@ running as a standalone service, or httpd for being run by a httpd server")
       create_resources('file', $credential_keys, {
           'owner'     => $keystone_user,
           'group'     => $keystone_group,
+          'mode'      => '0600',
           'subscribe' => 'Anchor[keystone::install::end]',
         }
       )
